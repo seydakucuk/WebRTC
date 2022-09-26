@@ -1,9 +1,7 @@
 function clickcreateoffer() {
-  console.log('clickcreateoffer');
-  document.getElementById('buttoncreateoffer').disabled = true;
-  document.getElementById('spanoffer').classList.toggle('invisible');
+  console.log("clickcreateoffer");
   peerConnection = createPeerConnection(lasticecandidate);
-  dataChannel = peerConnection.createDataChannel('chat');
+  dataChannel = peerConnection.createDataChannel("chat");
   dataChannel.onopen = datachannelopen;
   dataChannel.onmessage = datachannelmessage;
   createOfferPromise = peerConnection.createOffer();
@@ -11,55 +9,60 @@ function clickcreateoffer() {
 }
 
 function createOfferDone(offer) {
-  console.log('createOfferDone');
+  console.log("createOfferDone");
   setLocalPromise = peerConnection.setLocalDescription(offer);
   setLocalPromise.then(setLocalDone, setLocalFailed);
 }
 
 function createOfferFailed(reason) {
-  console.log('createOfferFailed');
+  console.log("createOfferFailed");
   console.log(reason);
 }
 
+var answeringWindow = null;
+
 function setLocalDone() {
-  console.log('setLocalDone');
+  console.log("setLocalDone");
 }
 
 function setLocalFailed(reason) {
-  console.log('setLocalFailed');
+  console.log("setLocalFailed");
   console.log(reason);
 }
 
 function lasticecandidate() {
-  console.log('lasticecandidate');
-  textelement = document.getElementById('textoffer');
+  console.log("lasticecandidate");
   offer = peerConnection.localDescription;
-  textelement.value = JSON.stringify(offer);
-  document.getElementById('buttonoffersent').disabled = false;
+  offerString = JSON.stringify(offer);
+
+  answeringWindow = window.open(
+    "answering.html?sdp=" + offerString,
+    "answering",
+    "left=600,height=900,width=1200,noopener"
+  );
 }
 
 function clickoffersent() {
-  console.log('clickoffersent');
-  document.getElementById('spananswer').classList.toggle('invisible');
-  document.getElementById('buttonoffersent').disabled = true;
-}
-
-function clickanswerpasted() {
-  console.log('clickanswerpasted');
-  document.getElementById('buttonanswerpasted').disabled = true;
-  textelement = document.getElementById('textanswer');
-  textelement.readOnly = true;
-  answer = JSON.parse(textelement.value);
-  setRemotePromise = peerConnection.setRemoteDescription(answer);
-  setRemotePromise.then(setRemoteDone, setRemoteFailed);
+  console.log("clickoffersent");
 }
 
 function setRemoteDone() {
-  console.log('setRemoteDone');
+  console.log("setRemoteDone");
 }
 
 function setRemoteFailed(reason) {
-  console.log('setRemoteFailed');
+  console.log("setRemoteFailed");
   console.log(reason);
 }
 
+let offerString = "";
+window.addEventListener("load", clickcreateoffer);
+
+window.addEventListener("storage", (event) => {
+  if (event.key == "offer") {
+    answer = JSON.parse(event.newValue);
+    setRemotePromise = peerConnection.setRemoteDescription(answer);
+    setRemotePromise.then(setRemoteDone, setRemoteFailed);
+    localStorage.removeItem("offer");
+  }
+});

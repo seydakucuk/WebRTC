@@ -64,3 +64,4 @@ function chatbuttonclick() {
   chatlog(text);
   textelement.value = '';
 }
+
